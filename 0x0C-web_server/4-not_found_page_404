@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Script thats install nginx web server
+apt-get -y update
+apt-get install -y nginx
+echo "Hello World!" | sudo tee /var/www/html/index.html
+echo "Ceci n'est pas une page" | sudo tee /var/www/html/404.html
+ufw allow 'Nginx HTTP'
+sudo tee /etc/nginx/sites-available/default > /dev/null <<EOF
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/html;
+    index index.html;
+
+    location /redirect_me {
+        return 301 http://localhost/new_page;
+    }
+    error_page 404 /404.html;
+    location = /404.html {
+        internal;
+    }
+}
+EOF
+
+sudo service nginx restart
