@@ -1,16 +1,21 @@
-#!/bin/bash
-
-# Install Nginx
-apt-get update
+#!/usr/bin/env bash
+# Script thats install nginx web server
+apt-get -y update
 apt-get install -y nginx
+echo "Hello World!" > /var/www/html/index.html
+ufw allow 'Nginx HTTP'
+tee /etc/nginx/sites-available/default > /dev/null <<EOF
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
 
-# Configure Nginx
-echo 'Hello World!' > /usr/share/nginx/html/index.html
+    root /var/www/html;
+    index index.html;
 
-# Ensure Nginx is listening on port 80
-sed -i 's/80 default_server/80/' /etc/nginx/sites-available/default
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+}
+EOF
 
-# Restart Nginx without systemctl
-kill -s HUP $(cat /var/run/nginx.pid)
-
-# End of script
+sudo service nginx restart
