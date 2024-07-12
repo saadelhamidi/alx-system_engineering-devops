@@ -2,21 +2,22 @@
 # This script displays DNS information for specified subdomains
 
 query_dns() {
-  local subdomain=$1
-  local domain=$2
+  local subdomain="$1"
+  local domain="$2"
   dig "${subdomain}.${domain}" +short | awk 'NR==1{print $1}'
 }
 
 display_info() {
-  local subdomain=$1
-  local domain=$2
-  local record=$(query_dns "$subdomain" "$domain")
+  local subdomain="$1"
+  local domain="$2"
+  local record
+  record=$(query_dns "$subdomain" "$domain")
   echo "The subdomain ${subdomain} is a A record and points to ${record}"
 }
 
 main() {
-  local domain=$1
-  local subdomain=$2
+  local domain="$1"
+  local subdomain="$2"
 
   if [ -z "$subdomain" ]; then
     for sub in www lb-01 web-01 web-02; do
