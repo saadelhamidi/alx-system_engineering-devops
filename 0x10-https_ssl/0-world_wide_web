@@ -1,16 +1,37 @@
 #!/usr/bin/env bash
-# Takes a subdomain and a domain and returns information about the subdomain
+# This script displays DNS information for specified subdomains
 
-print_info () {
-    dig "$1" | grep -A1 'ANSWER SECTION:' | sed -r "s/$1./$2/g" | awk -F" " ' NR==2 { print "The subdomain " $1 " is a " $4 " record and points to " $5 }'
+query_dns() {
+  local subdomain=$1
+  local domain=$2
+  dig "${subdomain}.${domain}" +short | awk 'NR==1{print $1}'
 }
 
-if [ "$#" -eq 2 ]
-then
-    print_info "$2.$1" "$2"
-else
-    print_info "www.$1" "www"
-    print_info "lb-01.$1" "lb-01"
-    print_info "web-01.$1" "web-01"
-    print_info "web-02.$1" "web-02"
+display_info() {
+  local subdomain=$1
+  local domain=$2
+  local record=$(query_dns "$subdomain" "$domain")
+  echo "The subdomain ${subdomain} is a A record and points to ${record}"
+}
+
+main() {
+  local domain=$1
+  local subdomain=$2
+
+  if [ -z "$subdomain" ]; then
+    for sub in www lb-01 web-01 web-02; do
+      display_info "$sub" "$domain"
+    done
+  else
+    display_info "$subdomain" "$domain"
+  fi
+}
+
+# Check if domain argument is provided
+if [ -z "$1" ]; then
+  echo "Usage: $0 domain [subdomain]"
+  exit 1
 fi
+
+# Call main function with arguments
+main "$1" "$2"
