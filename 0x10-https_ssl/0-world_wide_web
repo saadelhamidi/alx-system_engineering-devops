@@ -1,38 +1,12 @@
 #!/usr/bin/env bash
-# This script displays DNS information for specified subdomains
+#Double the number of webservers
 
-query_dns() {
-  local subdomain="$1"
-  local domain="$2"
-  dig "${subdomain}.${domain}" +short | awk 'NR==1{print $1}'
-}
-
-display_info() {
-  local subdomain="$1"
-  local domain="$2"
-  local record
-  record=$(query_dns "$subdomain" "$domain")
-  echo "The subdomain ${subdomain} is a A record and points to ${record}"
-}
-
-main() {
-  local domain="$1"
-  local subdomain="$2"
-
-  if [ -z "$subdomain" ]; then
-    for sub in www lb-01 web-01 web-02; do
-      display_info "$sub" "$domain"
-    done
-  else
-    display_info "$subdomain" "$domain"
-  fi
-}
-
-# Check if domain argument is provided
-if [ -z "$1" ]; then
-  echo "Usage: $0 domain [subdomain]"
-  exit 1
+if [ "$#" -eq 1 ]; then
+    echo "$(dig www.$1 | awk '/ANSWER SECTION:/ {getline; print "The subdomain www is a "$4" record and points to "$5}')"
+    echo "$(dig lb-01.$1 | awk '/ANSWER SECTION:/ {getline; print "The subdomain lb-01 is a "$4" record and points to "$5}')"
+    echo "$(dig web-01.$1 | awk '/ANSWER SECTION:/ {getline; print "The subdomain web-01 is a "$4" record and points to "$5}')"
+    echo "$(dig web-02.$1 | awk '/ANSWER SECTION:/ {getline; print "The subdomain web-02 is a "$4" record and points to "$5}')"
+elif [ "$#" -eq 2 ]; then
+    subdomain=$2
+    echo "$(dig $subdomain.$1 | awk '/ANSWER SECTION:/ {getline; print "The subdomain '"$subdomain"' is a "$4" record and points to "$5}')"
 fi
-
-# Call main function with arguments
-main "$1" "$2"
