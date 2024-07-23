@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Fix this container so that Nginx is running as the nginx user.
+username="nginx"
+
+if id "$username" &>/dev/null; then
+    echo "User $username already exists."
+else
+    sudo useradd -m -s /bin/bash "$username"
+    echo "User $username created successfully."
+fi
+sudo chmod 755 /run/
+sudo touch /run/nginx.pid
+sudo chown -R nginx:nginx /etc/nginx /var/log/nginx /run/nginx.pid /usr/sbin/nginx /var/lib/nginx
+sudo chown nginx:nginx /run/nginx.pid
+
+sudo chmod -R u=rwx,g=rx,o= /etc/nginx /var/log/nginx /run/nginx.pid
+sudo sed -i 's/user www-data;/user nginx;/' /etc/nginx/nginx.conf
+sed -i "s/80/8080/g" /etc/nginx/sites-available/default
+sudo chmod 644 /etc/nginx/nginx.conf
+pkill apache2
+# Restart Nginx service
+sudo -u nginx service nginx start
