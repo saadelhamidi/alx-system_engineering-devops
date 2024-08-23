@@ -15,6 +15,10 @@ server {
 		proxy_pass http://localhost:5000;
 	}
 
+	location /airbnb-dynamic/ {
+		proxy_pass http://localhost:5001/;
+	}
+
 	if ($request_filename ~ redirect_me){
 		rewrite ^ https://sketchfab.com/bluepeno/models permanent;
 	}
